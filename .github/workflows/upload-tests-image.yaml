@@ -6,8 +6,8 @@ on:
     branches: [ "main" ]
     paths:
       - "tests/**"
-      - "Dockerfile.playwright"   # if you keep Dockerfile at root
-      - ".github/workflows/upload-tests-image.yml"
+      - "Dockerfile.playwright"
+      - ".github/workflows/upload-tests-image.yaml"
 
 permissions:
   contents: read
@@ -26,7 +26,7 @@ jobs:
       - name: Build tests image
         run: |
           docker build -t ghcr.io/${{ github.repository_owner }}/dummy-app:${{ github.sha }} \
-            -f tests/Dockerfile tests/
+            -f Dockerfile.playwright .
 
       - name: Push
         run: |
