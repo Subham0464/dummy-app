@@ -19,15 +19,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set lowercase image owner
+        run: |
+          echo "IMAGE_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
+
       - name: Log in to GHCR
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
       - name: Build tests image
         run: |
-          docker build -t ghcr.io/${{ github.repository_owner }}/dummy-app:${{ github.sha }} \
+          docker build -t ghcr.io/${{ env.IMAGE_OWNER }}/dummy-app:${{ github.sha }} \
             -f Dockerfile.playwright .
 
       - name: Push
         run: |
-          docker push ghcr.io/${{ github.repository_owner }}/dummy-app:${{ github.sha }}
+          docker push ghcr.io/${{ env.IMAGE_OWNER }}/dummy-app:${{ github.sha }}
