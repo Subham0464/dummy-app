@@ -6,8 +6,8 @@ test('addition flow from home page', async ({ page }) => {
   await page.getByRole('link', { name: 'Go to Addition' }).click();
   await expect(page).toHaveURL(/\/addition$/);
 
-  const firstNumber = Math.floor(Math.random() * 100);
-  const secondNumber = Math.floor(Math.random() * 100);
+  const firstNumber = Math.floor(Math.random() * 1000);
+  const secondNumber = Math.floor(Math.random() * 1000);
 
   const result = firstNumber + secondNumber;
 
