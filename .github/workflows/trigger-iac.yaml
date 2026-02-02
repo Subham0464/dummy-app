@@ -1,4 +1,4 @@
-name: trigger-dummy-iac
+name: build-push-and-trigger-dummy-iac
 
 on:
   push:
@@ -6,16 +6,43 @@ on:
 
 permissions:
   contents: read
+  packages: write   # needed to push to GHCR
 
 jobs:
-  trigger-iac:
+  build-push-trigger:
     runs-on: ubuntu-latest
+
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Set image id
+        id: meta
+        run: |
+          set -euo pipefail
+          IMAGE="ghcr.io/${{ github.repository_owner }}/demo-app:${{ github.sha }}"
+          echo "image_id=$IMAGE" >> "$GITHUB_OUTPUT"
+          echo "Will build & push: $IMAGE"
+
+      - name: Log in to GHCR
+        run: |
+          set -euo pipefail
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Build image
+        run: |
+          set -euo pipefail
+          docker build -t "${{ steps.meta.outputs.image_id }}" .
+
+      - name: Push image
+        run: |
+          set -euo pipefail
+          docker push "${{ steps.meta.outputs.image_id }}"
+
       - name: Trigger dummy-iac repository_dispatch
         env:
           TOKEN: ${{ secrets.DUMMY_IAC_TRIGGER_TOKEN }}
-          OWNER: ${{ github.repository_owner }}
-          APP_IMAGE_ID: ghcr.io/${{ github.repository_owner }}/demo-app:${{ github.sha }}
+          OWNER: ${{ github.repository_owner }}  # change if dummy-iac is under a different owner/org
+          APP_IMAGE_ID: ${{ steps.meta.outputs.image_id }}
         run: |
           set -euo pipefail
 
